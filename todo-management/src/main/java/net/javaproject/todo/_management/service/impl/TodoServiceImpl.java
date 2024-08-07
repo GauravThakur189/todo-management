@@ -9,6 +9,10 @@ import net.javaproject.todo._management.service.TodoService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @AllArgsConstructor
 public class TodoServiceImpl implements TodoService {
@@ -48,6 +52,31 @@ public class TodoServiceImpl implements TodoService {
         Todo getTodo = todoRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("todo not found with given id " +id));
        return modelMapper.map(getTodo,TodoDto.class);
+
+    }
+
+    @Override
+    public List<TodoDto> getAllTodo() {
+       List<Todo> list =   todoRepository.findAll();
+       List<TodoDto> getList = list.stream().map((todo -> modelMapper.map(todo,TodoDto.class)))
+               .collect(Collectors.toList());
+       return getList;
+    }
+
+    @Override
+    public TodoDto updateTodo(TodoDto todoDto, Long id) {
+     Todo todo =    todoRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Todo Not Found"+ id));
+     todo.setTitle(todoDto.getTitle());
+     todo.setDescription(todoDto.getDescription());
+     todo.setCompleted(todoDto.isCompleted());
+      Todo updatedTodo =    todoRepository.save(todo);
+      return modelMapper.map(updatedTodo,TodoDto.class);
+    }
+
+    @Override
+    public void deleteTodo(Long id) {
+    // Todo todo =   todoRepository.findById(id).get();
+        todoRepository.deleteById(id);
 
     }
 }
